@@ -1,127 +1,140 @@
 body {
-  background: #121212;
-  color: #e0e0e0;
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding-top: 40px;
+	background: #121212;
+	color: #e0e0e0;
+	min-height: 100vh;
+	display: flex;
+	justify-content: center;
+	align-items: flex-start;
+	padding-top: 40px;
 }
 
 .todo-container {
-  width: 100%;
-  max-width: 1200px;
+	width: 100%;
+	max-width: 90vw;
 }
 
-/* --- Tasks --- */
+/* Task items */
 .task-item {
-  background: #414141;
-  border-color: #333;
-  border-radius: 10px;
-  transition: background 0.2s ease, transform 0.1s ease;
+	background: #414141;
+	border-color: #333;
+	border-radius: 10px;
+	transition: background 0.2s ease, transform 0.1s ease;
 }
-
 .task-item.dragging {
-  opacity: 0.7;
-  transform: scale(0.98);
+	opacity: 0.7;
+	transform: scale(0.98);
 }
-
 .task-comment {
-  font-size: 0.9rem;
-  color: #aaa;
+	font-size: 0.9rem;
+	color: #aaa;
 }
-
 .drag-over {
-  border: 2px dashed #0d6efd;
-  background: #1c2735;
+	border: 2px dashed #0d6efd;
+	background: #1c2735;
 }
 
-/* --- Deployed visual style --- */
-.task-item.deployed {
-  border-left: 4px solid #2ecc71;
-  background: #2e2e2e;
-  box-shadow: inset 0 0 10px rgba(46, 204, 113, 0.2);
+/* Status colors */
+.task-item.task-progress {
+	border-left: 4px solid #3498db; /* blue */
 }
-.task-item.deployed .task-title {
-  text-decoration: line-through;
-  color: #9fd99f;
+.task-item.task-stashed {
+	border-left: 4px solid #9b59b6; /* purple */
 }
-
-/* --- Modal --- */
-.modal-content {
-  background-color: #1e1e1e;
-  color: #e0e0e0;
-  border: 1px solid #333;
+.task-item.task-committed {
+	border-left: 4px solid #e67e22; /* orange */
 }
-
-/* --- Filter bar --- */
-.filter-bar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  align-items: center;
-  justify-content: space-between;
+.task-item.task-deployed {
+	border-left: 4px solid #2ecc71; /* green */
+	background: #2e2e2e;
+	box-shadow: inset 0 0 10px rgba(46, 204, 113, 0.2);
 }
-.search-input {
-  max-width: 300px;
+.task-item.task-deployed .task-title {
+	text-decoration: line-through;
+	color: #9fd99f;
 }
 
-/* --- Sticky summary bar --- */
+/* Summary bar */
 .summary-bar {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  text-align: center;
-  border-radius: 8px;
-  padding: 8px 12px;
-  margin-bottom: 15px;
-  font-size: 0.95rem;
-  color: #fff;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-  opacity: 1;
-  transition: opacity 0.3s ease, background-color 0.4s ease;
+	position: sticky;
+	top: 0;
+	z-index: 10;
+	border-radius: 8px;
+	padding: 8px 12px;
+	margin-bottom: 15px;
+	font-size: 0.95rem;
+	color: #fff;
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+	text-align: center;
 }
-.summary-bar.fade {
-  opacity: 0.4;
-}
+
 .summary-neutral {
-  background: #333;
+	background: #333;
 }
 .summary-partial {
-  background: #997a00;
+	background: #997a00;
 }
 .summary-complete {
-  background: #0b6e0b;
+	background: #0b6e0b;
 }
 
-/* --- Status line --- */
+/* Filter bar centered */
+.filter-bar {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.8rem;
+	margin-bottom: 1rem;
+}
+.search-input {
+	width: 100%;
+	max-width: 400px;
+}
+.filter-bar .btn-group {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 0.4rem;
+}
+
+/* 3-dots dropdown */
+.three-dots {
+	font-size: 1.2rem;
+	line-height: 1;
+	padding: 2px 8px;
+}
+#exportImportMenu {
+	display: none;
+	background: #1e1e1e;
+	border: 1px solid #333;
+}
+#exportImportMenu.show {
+	display: block;
+}
+
+/* Status line */
 .status-line {
-  border-top: 1px solid #333;
-  margin-top: 6px;
-  padding-top: 6px;
+	border-top: 1px solid #333;
+	margin-top: 6px;
+	padding-top: 6px;
 }
 .status-line .form-check {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
+	display: flex;
+	align-items: center;
+	cursor: pointer;
 }
 .status-line .form-check-input {
-  cursor: pointer;
-  margin-right: 5px;
+	cursor: pointer;
+	margin-right: 5px;
 }
 .status-line .form-check-label {
-  cursor: pointer;
-  font-weight: 500;
-  user-select: none;
+	cursor: pointer;
+	font-weight: 500;
+	user-select: none;
 }
 
-/* import export */
-#exportBtn,
-#importInput + label {
-  font-weight: 500;
-}
-#exportBtn:hover,
-#importInput + label:hover {
-  opacity: 0.9;
+/* Modal styling */
+.modal-content {
+	background-color: #1e1e1e;
+	color: #e0e0e0;
+	border: 1px solid #333;
 }
