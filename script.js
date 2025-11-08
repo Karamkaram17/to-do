@@ -19,11 +19,12 @@ const exportBtn = document.getElementById('exportBtn');
 const clearAllBtn = document.getElementById('clearAllBtn');
 const mergeBtn = document.getElementById('mergeBtn');
 const replaceBtn = document.getElementById('replaceBtn');
-const summaryMenuBtn = document.getElementById('summaryMenuBtn');
-const exportImportMenu = document.getElementById('exportImportMenu');
+const confirmClearCommentModal = new bootstrap.Modal(document.getElementById('confirmClearCommentModal'));
+const confirmClearCommentBtn = document.getElementById('confirmClearCommentBtn');
 
 let editId = null;
 let deleteId = null;
+let pendingClearCommentId = null;
 let activeFilter = 'all';
 let importedData = null;
 
@@ -100,13 +101,13 @@ function renderTasks() {
 		li.innerHTML = `
       <div class="d-flex justify-content-between align-items-start">
         <div class="flex-grow-1">
-          <span class="fw-semibold task-title">${task.title}</span>
-          ${task.comment ? `<div class="task-comment"><small>💬 ${task.comment}</small></div>` : ''}
+          <span class="fw-semibold task-title text-break">${task.title}</span>
+          ${task.comment ? `<div class="task-comment text-break"><small>💬</small><small>${task.comment}</small></div>` : ''}
         </div>
-        <div class="d-flex gap-2 align-items-start">
-          <button class="btn btn-sm btn-outline-primary" onclick="openEditModal('${task.id}')">✏️</button>
-          ${task.comment ? `<button class="btn btn-sm btn-outline-warning" onclick="clearComment('${task.id}')">💬❌</button>` : ''}
-          <button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal('${task.id}')">🗑️</button>
+        <div class="d-flex gap-2 align-items-center justify-content-end">
+          <button class="btn btn-sm btn-outline-primary btn-task-action" onclick="openEditModal('${task.id}')">✏️</button>
+          ${task.comment ? `<button class="btn btn-sm btn-outline-warning btn-task-action" onclick="clearComment('${task.id}')">💬❌</button>` : ''}
+          <button class="btn btn-sm btn-outline-danger btn-task-action" onclick="openDeleteModal('${task.id}')">🗑️</button>
         </div>
       </div>
       <div class="status-line d-flex flex-wrap gap-3 mt-2">
@@ -174,12 +175,21 @@ function addTask() {
 }
 
 function clearComment(id) {
-	const i = getIndexById(id);
+	pendingClearCommentId = id;
+	confirmClearCommentModal.show();
+}
+
+confirmClearCommentBtn.addEventListener('click', () => {
+	if (!pendingClearCommentId) return;
+	const i = getIndexById(pendingClearCommentId);
 	if (i === -1) return;
+
 	tasks[i].comment = '';
 	saveTasks();
 	renderTasks();
-}
+	confirmClearCommentModal.hide();
+	pendingClearCommentId = null;
+});
 
 function openDeleteModal(id) {
 	deleteId = id;
@@ -293,7 +303,7 @@ confirmDeleteAllBtn.addEventListener('click', () => {
 /* ---------- Export / Import ---------- */
 exportBtn.addEventListener('click', () => {
 	if (!tasks.length) {
-		alert('No tasks to export.');
+		showToast('No tasks to export.', 'error');
 		return;
 	}
 	const blob = new Blob([JSON.stringify(tasks, null, 2)], {
@@ -318,7 +328,7 @@ importInput.addEventListener('change', (e) => {
 			importedData = data;
 			importModal.show();
 		} catch {
-			alert('❌ Invalid or corrupted JSON file.');
+			showToast('Invalid or corrupted JSON file.', 'error');
 			importedData = null;
 		}
 		importInput.value = '';
@@ -362,17 +372,42 @@ function handleImport(mode) {
 	importModal.hide();
 }
 
-/* ---------- Menu Hover ---------- */
-summaryMenuBtn.addEventListener('mouseenter', () => {
-	exportImportMenu.classList.add('show');
-});
-summaryBar.addEventListener('mouseleave', () => {
-	exportImportMenu.classList.remove('show');
-});
-
 /* ---------- Events ---------- */
 addTaskBtn.addEventListener('click', addTask);
 taskInput.addEventListener('keypress', (e) => e.key === 'Enter' && addTask());
 
 /* ---------- Init ---------- */
 renderTasks();
+
+/* ---------- Snackbar / Toast ---------- */
+function showToast(message, type = 'info') {
+	const toastContainer = document.getElementById('toastContainer');
+	const toastEl = document.createElement('div');
+	const bgClass =
+		type === 'success'
+			? 'bg-success text-white'
+			: type === 'error'
+			? 'bg-danger text-white'
+			: type === 'warning'
+			? 'bg-warning text-dark'
+			: 'bg-secondary text-white';
+
+	toastEl.className = `toast align-items-center ${bgClass} border-0 mb-2`;
+	toastEl.setAttribute('role', 'alert');
+	toastEl.setAttribute('aria-live', 'assertive');
+	toastEl.setAttribute('aria-atomic', 'true');
+
+	toastEl.innerHTML = `
+		<div class="d-flex">
+			<div class="toast-body">${message}</div>
+			<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+		</div>
+	`;
+
+	toastContainer.appendChild(toastEl);
+	const bsToast = new bootstrap.Toast(toastEl, { delay: 5000 });
+	bsToast.show();
+
+	// Cleanup after fadeout
+	toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
+}
